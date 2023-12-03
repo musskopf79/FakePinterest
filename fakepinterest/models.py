@@ -1,8 +1,16 @@
 # Criar estrutura do banco de dados
-from fakepinterest import database
-from datetime import datetime
 
-class Usuario(database.Model):
+
+from fakepinterest import database, login_manager
+from datetime import datetime
+from flask_login import UserMixin
+
+@login_manager.user_loader
+def load_usuario(id_usuario):
+    #get, pois queremos o usuário específico, pelo ID (!= de filter_by)
+    return Usuario.query.get(int(id_usuario))    
+
+class Usuario(database.Model, UserMixin):
     id_usuario = database.Column(database.Integer, primary_key=True)
     username = database.Column(database.String, nullable = False, unique=True)
     email = database.Column(database.String, nullable = False, unique=True)
