@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block titulo %}
+
+FakePinterest - Criar Conta
+{% endblock %}
+
+
+{% block body %}
+    <body>
+
+    <h1>FakePinterest - Criar conta</h1>
+    <h2>Agora vamos criar nossa conta no FakePinterest.</h2>
+
+
+    {% block formulario %}
+        <form method="POST">
+
+            {{ formulario.csrf_token }} 
+        <p! -- o código 'formulario.csrf_token' é uma trava de segurança para possíveis invasões -->
+
+        {{ formulario.username.label() }}    
+        {{ formulario.username() }}
+        <p! -- O código '.label()' informa o título do campo -- >
+        </p>
+        {{ formulario.email.label() }}    
+        {{ formulario.email() }}
+        </p>
+        {{ formulario.senha.label() }}
+        {{ formulario.senha() }}
+        <p! -- O parênteses '()' permite formatar o campo. -- >    
+        </p>
+        {{ formulario.confirmacao_senha.label() }}
+        {{ formulario.confirmacao_senha() }}
+        </p>
+        {{ formulario.botao_criar() }}
+        
+            
+        </form>
+    {% endblock %}
+
+    </body>
+{% endblock %}
