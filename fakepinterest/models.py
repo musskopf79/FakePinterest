@@ -17,6 +17,11 @@ class Usuario(database.Model, UserMixin):
     senha = database.Column(database.String, nullable = False)
     fotos = database.relationship("Postagem", backref="usuario", lazy=True)
 
+    def get_id(self):
+        return self.id_usuario
+    # Como não estou usando a chave como "id" (e sim id_usuário), precisa definir a opção get_id, pois é usada em vários comandos do flask-login
+
+    
 class Postagem(database.Model):
     id_post = database.Column(database.Integer, primary_key=True)
     id_usuario = database.Column(database.Integer, database.ForeignKey('usuario.id_usuario'), nullable = False)

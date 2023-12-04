@@ -1,25 +1,45 @@
 # Criar as rotas do nosso site (links / páginas.html)
 
-from flask import render_template, url_for
-from fakepinterest import app
-from flask_login import login_required
+from flask import render_template, url_for, redirect
+from fakepinterest import app, database, bcrypt
+from flask_login import login_required, login_user, logout_user, current_user
 from fakepinterest.forms import FormLogin, FormCriarConta
+from fakepinterest.models import Usuario
 
 @app.route("/", methods=["GET", "POST"])
 def homepage():
-    formlogin = FormLogin()
-    return render_template("homepage.html", formulario=formlogin)
+    form_login = FormLogin()
+    if form_login.validate_on_submit():
+        usuario = Usuario.query.filter_by(email=form_login.email.data).first()
+        if usuario and bcrypt.check_password_hash(usuario.senha, form_login.senha.data):
+            login_user(usuario)
+            return redirect(url_for("perfil", id_usuario=usuario.id_usuario))
+    return render_template("homepage.html", formulario=form_login)
     #O campo 'formulario' é o nome para a página .html
     # O campo 'formlogin' é a variável (não a função!). Fica em minúsculo.
 
 @app.route("/criar_conta", methods=["GET", "POST"])
 def criar_conta():
-    formcriarconta = FormCriarConta()
-    return render_template("criar_conta.html", formulario=formcriarconta)
+    form_criarconta = FormCriarConta()
+    if form_criarconta.validate_on_submit():
+        senha = bcrypt.generate_password_hash(form_criarconta.senha.data)
+        usuario = Usuario(username=form_criarconta.username.data,
+                          email=form_criarconta.email.data,
+                          senha=senha)
+        database.session.add(usuario)
+        database.session.commit()
+        login_user(usuario, remember=True)
+        return redirect(url_for("perfil", id_usuario=usuario.id_usuario) )
+    return render_template("criar_conta.html", formulario=form_criarconta)
     #Os 2 campos 'formulario' tem o mesmo nome, para que a página homepage possa ser igual (uma cópia) da página criarconta
-    # O campo 'formcriarconta' é a variável (não a função!). Fica em minúsculo.
+    # O campo 'form_criarconta' é a variável (não a função!). Fica em minúsculo.
 
-@app.route("/perfil/<usuario>")
+@app.route("/perfil/<id_usuario>")
 @login_required
-def perfil(usuario):
-    return render_template("perfil.html", usuario=usuario)
+def perfil(id_usuario):
+    if int(id_usuario) == int(current_user.id_usuario):
+        # Usuário está vendo seu próprio perfil.
+        return render_template("perfil.html", usuario=current_user)
+    else:
+        usuario = Usuario.query.get(int(id_usuario))
+        return render_template("perfil.html", usuario=usuario)
