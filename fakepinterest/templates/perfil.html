@@ -4,16 +4,32 @@
 FakePinterest - Pefil {{ usuario }}
 {% endblock %}
 
-
 {% block body %}
+<body>
+    {% include "navbar.html" %}
+<p>
 
 <h1>Perfil do usuário: {{ usuario.username }}</h1>
+
+{% if form %}
+<form method="POST" enctype="multipart/form-data">
+    {{ form.csrf_token }}
+    
+    {{ form.post() }}
+    {{ form.botao_enviar() }}
+
+
+</form>
+{% endif %}
+</p>
+
 <a href="{{ url_for('logout') }}">Sair</a>
 </p>
-<img src="{{ url_for('static', filename='fotos_post/default.png') }}" >
+
 
 {% for foto in usuario.fotos %}
-
+<img src="{{ url_for('static', filename='fotos_post/{}'.format(foto.imagem)) }}" >
 {% endfor %}
 
+</body>
 {% endblock %}

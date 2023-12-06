@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block titulo %}
+FakePinterest - Feed Principal
+{% endblock %}
+
+{% block body %}
+<body>
+    
+{% include "navbar.html" %}
+<p>
+<h1>FakePinterest - Feed</h1>
+
+</p>
+
+{% for foto in fotos %}
+<img src="{{ url_for('static', filename='fotos_post/{}'.format(foto.imagem)) }}" >
+{% endfor %}
+
+</body>
+{% endblock %}

@@ -2,7 +2,7 @@
 #pip install flask-wtf email_validator
 
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField
+from wtforms import StringField, PasswordField, SubmitField, FileField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError
 from fakepinterest.models import Usuario
 
@@ -25,3 +25,7 @@ class FormCriarConta(FlaskForm):
         #email.data = campo de e-mail do formulário
         if usuario:
             return ValidationError("E-mail já cadastrado, faça login para continuar")
+
+class FormPost(FlaskForm):
+    post = FileField("Post", validators=[DataRequired()])
+    botao_enviar = SubmitField("Postar foto")

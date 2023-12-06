@@ -3,8 +3,10 @@
 from flask import render_template, url_for, redirect
 from fakepinterest import app, database, bcrypt
 from flask_login import login_required, login_user, logout_user, current_user
-from fakepinterest.forms import FormLogin, FormCriarConta
-from fakepinterest.models import Usuario
+from fakepinterest.forms import FormLogin, FormCriarConta, FormPost
+from fakepinterest.models import Usuario, Postagem
+import os
+from werkzeug.utils import secure_filename
 
 @app.route("/", methods=["GET", "POST"])
 def homepage():
@@ -34,18 +36,38 @@ def criar_conta():
     #Os 2 campos 'formulario' tem o mesmo nome, para que a página homepage possa ser igual (uma cópia) da página criarconta
     # O campo 'form_criarconta' é a variável (não a função!). Fica em minúsculo.
 
-@app.route("/perfil/<id_usuario>")
+@app.route("/perfil/<id_usuario>", methods=["GET", "POST"])
 @login_required
 def perfil(id_usuario):
     if int(id_usuario) == int(current_user.id_usuario):
         # Usuário está vendo seu próprio perfil.
-        return render_template("perfil.html", usuario=current_user)
+        form_post = FormPost()
+        if form_post.validate_on_submit():
+            arquivo = form_post.post.data
+            # precisa corrigir o nome para não ter caracteres especiais, por exemplo
+            nome_corrigido = secure_filename(arquivo.filename)
+            # salvar o arquivo no fotos_post
+            caminho = os.path.join(os.path.abspath(os.path.dirname(__file__)),
+                              #estamos pegando o caminho absoluto de onde está o arquivo (__file__) em uso (routes.py)
+                              app.config["UPLOAD_FOLDER"], nome_corrigido)
+            arquivo.save(caminho)
+            # registrar o nome no banco de dados
+            postagem = Postagem(imagem=nome_corrigido, id_usuario=current_user.id_usuario)
+            database.session.add(postagem)
+            database.session.commit()
+
+        return render_template("perfil.html", usuario=current_user, form=form_post)
     else:
         usuario = Usuario.query.get(int(id_usuario))
-        return render_template("perfil.html", usuario=usuario)
+        return render_template("perfil.html", usuario=usuario, form=None)
     
 @app.route("/logout")
 @login_required
 def logout():
     logout_user()
     return redirect(url_for("homepage"))
+
+@app.route("/feed")
+def feed():
+    fotos = Postagem.query.order_by(Postagem.data_criacao).all()
+    return render_template("feed.html", fotos=fotos)
