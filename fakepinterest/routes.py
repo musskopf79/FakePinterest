@@ -69,5 +69,5 @@ def logout():
 
 @app.route("/feed")
 def feed():
-    fotos = Postagem.query.order_by(Postagem.data_criacao).all()
+    fotos = Postagem.query.order_by(Postagem.data_criacao.desc()).all()
     return render_template("feed.html", fotos=fotos)
